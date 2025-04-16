@@ -5,4 +5,7 @@ Simulation of custom made elo system for EDH games.
 configure number of players and decks via command line:  
 --players (maximum 8)  
 --decks  
---rounds (sets amount of simulated rounds)  
+--rounds (sets amount of simulated rounds)      
+
+
+The data_viewer.py file can be run to look at the distribution of decks.
