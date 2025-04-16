@@ -10,3 +10,5 @@ class player:
 
     def set_decks(self,decks):
         self.decks = decks
+    def get_decks(self):
+        return self.decks

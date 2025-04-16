@@ -26,16 +26,18 @@ class match:
 
 class league:
 
-    def __init__(self, players, max_matches = 1000):
+    def __init__(self, players, level_select_policy = "random", max_matches = 1000):
         """
         takes a list of players and decks and optional max_matches parameter to simulate a league.
         """
         self.players = players
-        
+        self.level_select_policy = level_select_policy
         self.max_matches = max_matches
-        self.max_level = 19
+        self.max_level = 10
         self.start_level = 7
-
+        self.games_per_level = {}
+        for i in  range(1, 11):
+            self.games_per_level[i] = 0
         decks = []
         for p in players:
             decks = decks + p.decks
@@ -49,20 +51,35 @@ class league:
             self.leaguelevel_map[i] = set()
         self.leaguelevel_map[self.start_level] = set(players)
 
-    def update_leaguelevels(self, leaguelevel, winning_deck, losing_decks, winning_player, losing_players):
+    def get_level_policy(self):
 
-        """
-        implements the logic with how decks ascend/descend in level
-        updates the map accordingly
-        """
+        """argument: some rule, returns a function that takes a league level and outputs the levels win/loss grants"""
+        policy = self.standard_level_policy
+        return policy
+    
+    def standard_level_policy(self, leaguelevel):
 
-        #set new levels achieved by decks
         if(leaguelevel < 7):
             win_level = min(leaguelevel+3, 7)
             loss_level = max(1, leaguelevel-1)
         else:
             win_level = min(self.max_level, leaguelevel+1)
             loss_level = max(1, leaguelevel-1)
+        return win_level, loss_level
+    
+    def update_leaguelevels(self, leaguelevel, winning_deck, losing_decks, winning_player, losing_players):
+
+        """
+        implements the logic with how decks ascend/descend in level
+        updates the map accordingly
+        """
+        self.games_per_level[leaguelevel] += 1
+        #set new levels achieved by decks
+        
+        policy = self.get_level_policy()
+        win_level, loss_level = policy(leaguelevel)
+
+
 
         #update each decks power
         winning_deck.league_level = win_level
@@ -73,15 +90,17 @@ class league:
             ld.league_level = loss_level
 
         #update the level map with the new levels reached
-        for lp in losing_players:
+        #if a level 1 game is played, losers dont change
+        if(leaguelevel != 1):
+            for lp in losing_players:
 
-            lp.level_count[loss_level] += 1
-            self.leaguelevel_map[loss_level].add(lp)
+                lp.level_count[loss_level] += 1
+                self.leaguelevel_map[loss_level].add(lp)
 
-            #delete from level that was just played incase no decks left
-            lp.level_count[leaguelevel] -= 1
-            if lp.level_count[leaguelevel] <= 0:
-                self.leaguelevel_map[leaguelevel].discard(lp)
+                #delete from level that was just played incase no decks left
+                lp.level_count[leaguelevel] -= 1
+                if lp.level_count[leaguelevel] <= 0:
+                    self.leaguelevel_map[leaguelevel].discard(lp)
 
         #same for winning player
         self.leaguelevel_map[win_level].add(winning_player)
@@ -99,8 +118,13 @@ class league:
         valid_levels = [level for level, ps in self.leaguelevel_map.items() if len(ps) >= 4]
         if(len(valid_levels) <= 0):
             return False
+        
         #random possible leaguelevel, random set of players
-        current_leaguelevel = random.choice(valid_levels)
+        if self.level_select_policy == "random": 
+            current_leaguelevel = random.choice(valid_levels)
+        elif self.level_select_policy == "highest":
+            current_leaguelevel = max(valid_levels)
+
         current_players = random.sample(self.leaguelevel_map[current_leaguelevel], 4)
 
         current_decks = []
