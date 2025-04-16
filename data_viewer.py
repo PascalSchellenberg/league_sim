@@ -82,6 +82,11 @@ class JSONViewerApp:
         self.show_json_plot()
 
 # Initialize the tkinter root window
+
+def on_close():
+    root.quit()  # This ensures the application exits
+
 root = tk.Tk()
+root.protocol("WM_DELETE_WINDOW", on_close)  # Close the window correctly
 app = JSONViewerApp(root)
 root.mainloop()
