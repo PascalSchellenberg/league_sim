@@ -14,8 +14,10 @@ parser.add_argument("--players", type=int,default = 8, help="number of players")
 parser.add_argument("--decks", type=int, default=160, help="number of decks")
 parser.add_argument("--leaguerounds", type=int, default = 10000, help="number of simulated rounds")
 parser.add_argument("--simulationrounds", type=int, default = 50)
+parser.add_argument("--policy", type=str, default="random")
 args = parser.parse_args()
 counts = []
+games_per_level = []
 for i in range(args.simulationrounds): 
     decks = engine.generate_decks(args.decks)
     players = engine.generate_players(args.players)
@@ -23,7 +25,7 @@ for i in range(args.simulationrounds):
 
 
 
-    league = L.league(players, level_select_policy="highest")
+    league = L.league(players, level_select_policy=args.policy)
 
     stepnr = 0
 
@@ -38,25 +40,20 @@ for i in range(args.simulationrounds):
 
 
 
-
-
-
-
-
-
     level_count = {}
     for i in range(1, 11):
         level_count[i] = 0
     for d in decks:
         level_count[d.league_level] += 1
     counts.append(level_count)
-
+    games_per_level.append(league.games_per_level)
 
 
 stor = data_utils.create_store_dir()
 print(stor)
-for index, c in enumerate(counts):
-    data_utils.store_level_distribution(stor, c, index)
+for i in range(args.simulationrounds):
+
+    data_utils.store_level_distribution(stor, counts[i], games_per_level[i], i)
 
 
 

@@ -19,14 +19,19 @@ def load_json(file):
 
 # Function to plot data
 def plot_data(data):
-    fig, ax = plt.subplots()
-    ax.plot(list(data.keys()), list(data.values()), marker='o')
-    ax.set_title('JSON Data Plot')
-    ax.set_xlabel('Key')
-    ax.set_ylabel('Value')
-    
-    return fig
+    figures = []
 
+    for label, d in data.items():
+        if isinstance(d, dict):
+            fig, ax = plt.subplots()
+            keys = list(d.keys())
+            values = list(d.values())
+            ax.plot(keys, values, marker='o')
+            ax.set_title(f'JSON Data Plot - {label}')
+            ax.set_xlabel('Key')
+            ax.set_ylabel('Value')
+            figures.append(fig)
+    return figures
 # Tkinter application class
 class JSONViewerApp:
     def __init__(self, root):
@@ -58,19 +63,21 @@ class JSONViewerApp:
     def show_json_plot(self):
         json_file = os.path.join(json_dir, json_files[self.index])
         data = load_json(json_file)
-        
-        # Create the plot
-        fig = plot_data(data)
-        
-        # Clear the old canvas if exists
-        if self.canvas:
-            self.canvas.get_tk_widget().destroy()
 
-        # Add the plot to the tkinter window
-        self.canvas = FigureCanvasTkAgg(fig, master=self.frame)
-        self.canvas.draw()
-        self.canvas.get_tk_widget().pack()
+        # Remove old plots
+        for widget in self.frame.winfo_children():
+            widget.destroy()
 
+        # Create the plots
+        figs = plot_data(data)
+
+        # Add each figure to the Tkinter window
+        for fig in figs:
+            canvas = FigureCanvasTkAgg(fig, master=self.frame)
+            canvas.draw()
+            canvas.get_tk_widget().pack()
+
+       
     # Function to navigate to the next JSON
     def next_json(self):
         self.index = (self.index + 1) % self.total_jsons  # Wrap around

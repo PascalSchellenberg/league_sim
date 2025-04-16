@@ -20,7 +20,7 @@ def create_store_dir():
     rnd_name = ''.join(random.choices(chars, k=12))
     #new_folder = os.path.join(current_dir, rnd_name)
     new_folder = os.path.join(current_dir, "test")
-    
+
     # Check if the folder exists
     if os.path.exists(new_folder):
         print(f"The folder '{new_folder}' already exists.")
@@ -30,8 +30,12 @@ def create_store_dir():
     return str(new_folder)
 
 
-def store_level_distribution(directory, level_map, run_nr):
+def store_level_distribution(directory, level_map, games_per_level, run_nr):
 
     filename =filename = os.path.join(directory,'run' + str(run_nr) +'.json')
+    combined = {
+        'level_map' : level_map,
+        'games_per_level' : games_per_level
+    }
     with open(filename, 'w') as json_file:
-        json.dump(level_map, json_file, indent=4)
+        json.dump(combined, json_file, indent=4)
