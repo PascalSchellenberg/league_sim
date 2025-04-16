@@ -4,7 +4,7 @@ class player:
         self.name = name
         self.level_count = {}
 
-        for i in range(1, 20):
+        for i in range(1, 11):
             self.level_count[i] = 0
         self.decks = []
 
