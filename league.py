@@ -54,9 +54,21 @@ class league:
     def get_level_policy(self):
 
         """argument: some rule, returns a function that takes a league level and outputs the levels win/loss grants"""
-        policy = self.standard_level_policy
+        #policy = self.standard_level_policy
+        policy = self.five_to_eight
         return policy
-    
+    def five_to_eight(self, leaguelevel):
+
+        if(leaguelevel < 5 ):
+            win_level = min(leaguelevel+3, 7)
+            loss_level = max(1, leaguelevel-1)
+        elif(leaguelevel == 6 or leaguelevel ==5):
+            win_level = 8
+            loss_level = leaguelevel-1
+        else:
+            win_level = min(self.max_level, leaguelevel+1)
+            loss_level = max(1, leaguelevel-1)
+        return win_level, loss_level
     def standard_level_policy(self, leaguelevel):
 
         if(leaguelevel < 7):
@@ -120,9 +132,11 @@ class league:
             return False
         
         #random possible leaguelevel, random set of players
-        if self.level_select_policy == "random": 
+        if self.level_select_policy == "random":
+            print("using random")
             current_leaguelevel = random.choice(valid_levels)
         elif self.level_select_policy == "highest":
+            print("using highest")
             current_leaguelevel = max(valid_levels)
 
         current_players = random.sample(self.leaguelevel_map[current_leaguelevel], 4)
